@@ -1,69 +1,78 @@
-const productContainer=document.getElementById("products");
-const search=document.getElementById("search");
+const productContainer = document.getElementById("products");
+const search = document.getElementById("search");
+const category = document.getElementById("category");
 
-let products=[];
+let products = [];
 
-async function loadProducts(){
+async function loadProducts() {
 
-const response=await fetch("products.json");
+    const response = await fetch("products.json");
+    products = await response.json();
 
-products=await response.json();
+    displayProducts(products);
+}
 
-displayProducts(products);
+function displayProducts(items) {
+
+    productContainer.innerHTML = "";
+
+    items.forEach(product => {
+
+        productContainer.innerHTML += `
+
+        <div class="card">
+
+            <img src="${product.image}" alt="${product.name}">
+
+            <h3>${product.name}</h3>
+
+            <p>Category: ${product.category}</p>
+
+            <p>₹${product.price}</p>
+
+            <button onclick="addCart(${product.id})">
+                Add To Cart
+            </button>
+
+        </div>
+
+        `;
+    });
 
 }
 
-function displayProducts(items){
+search.addEventListener("input", filterProducts);
+category.addEventListener("change", filterProducts);
 
-productContainer.innerHTML="";
+function filterProducts() {
 
-items.forEach(product=>{
+    let keyword = search.value.toLowerCase();
+    let selected = category.value;
 
-productContainer.innerHTML+=`
+    let filtered = products.filter(product => {
 
-<div class="card">
+        let matchName = product.name.toLowerCase().includes(keyword);
 
-<img src="${product.image}">
+        let matchCategory =
+            selected === "all" || product.category === selected;
 
-<h3>${product.name}</h3>
+        return matchName && matchCategory;
 
-<p>₹${product.price}</p>
+    });
 
-<button onclick="addCart(${product.id})">
-Add To Cart
-</button>
-
-</div>
-
-`;
-
-});
+    displayProducts(filtered);
 
 }
 
-search.addEventListener("input",()=>{
+function addCart(id) {
 
-const value=search.value.toLowerCase();
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-const filtered=products.filter(product=>
+    cart.push(id);
 
-product.name.toLowerCase().includes(value)
+    localStorage.setItem("cart", JSON.stringify(cart));
 
-);
-
-displayProducts(filtered);
-
-});
-
-function addCart(id){
-
-let cart=JSON.parse(localStorage.getItem("cart"))||[];
-
-cart.push(id);
-
-localStorage.setItem("cart",JSON.stringify(cart));
-
-alert("Added to Cart");
+    alert("Product Added to Cart");
 
 }
 
